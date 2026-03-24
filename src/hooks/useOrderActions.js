@@ -77,7 +77,7 @@ export default function useOrderActions() {
         0
       )
 
-      const { error } = await supabase.rpc('create_order_with_items', {
+      const { data, error } = await supabase.rpc('create_order_with_items', {
         p_total_amount: totalAmount,
         p_items: cartItems.map((item) => ({
           product_id:       item.product_id,
