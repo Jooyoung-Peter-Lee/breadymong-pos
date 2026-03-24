@@ -13,6 +13,13 @@ export default function useOrdersByDateRange() {
     setLoading(true)
     setError(null)
     try {
+      // 'yyyy-MM-dd' 문자열을 로컬(KST) 기준 Date로 변환 후 ISO 문자열로 전달
+      // (타임존 없는 문자열을 그대로 쓰면 Supabase가 UTC로 해석해 당일 조회 누락 발생)
+      const [sy, sm, sd] = startDate.split('-').map(Number)
+      const [ey, em, ed] = endDate.split('-').map(Number)
+      const from = new Date(sy, sm - 1, sd,  0,  0,  0).toISOString()
+      const to   = new Date(ey, em - 1, ed, 23, 59, 59).toISOString()
+
       const { data, error } = await supabase
         .from('orders')
         .select(`
@@ -24,11 +31,13 @@ export default function useOrdersByDateRange() {
             product_name,
             product_category,
             unit_price,
-            quantity
+            quantity,
+            options,
+            surcharge
           )
         `)
-        .gte('created_at', `${startDate}T00:00:00`)
-        .lte('created_at', `${endDate}T23:59:59`)
+        .gte('created_at', from)
+        .lte('created_at', to)
         .order('created_at', { ascending: true })
 
       if (error) throw new Error('매출 데이터를 불러오지 못했습니다.')

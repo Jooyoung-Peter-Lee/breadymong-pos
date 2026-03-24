@@ -98,7 +98,7 @@ function EditModal({ editCart, editTotal, saving, actionError, onQuantityChange,
                   </button>
                 </div>
                 <span style={{ minWidth: '80px', textAlign: 'right', fontSize: '14px', color: '#333' }}>
-                  {(item.unit_price * item.quantity).toLocaleString('ko-KR')}원
+                  {((item.unit_price + (item.surcharge ?? 0)) * item.quantity).toLocaleString('ko-KR')}원
                 </span>
               </li>
             ))}
@@ -219,6 +219,8 @@ export default function HistoryPage() {
         product_category: item.product_category,
         unit_price:       item.unit_price,
         quantity:         item.quantity,
+        options:          item.options   ?? {},
+        surcharge:        item.surcharge ?? 0,
       }))
     )
     setActionError(null)
@@ -282,7 +284,7 @@ export default function HistoryPage() {
 
       // total_amount 재계산 후 로컬 state 즉시 반영
       const newTotal = editCart.reduce(
-        (sum, item) => sum + item.unit_price * item.quantity,
+        (sum, item) => sum + (item.unit_price + (item.surcharge ?? 0)) * item.quantity,
         0
       )
       setLocalOrders((prev) =>
@@ -309,7 +311,7 @@ export default function HistoryPage() {
   }
 
   const editTotal = editCart.reduce(
-    (sum, item) => sum + item.unit_price * item.quantity,
+    (sum, item) => sum + (item.unit_price + (item.surcharge ?? 0)) * item.quantity,
     0
   )
 

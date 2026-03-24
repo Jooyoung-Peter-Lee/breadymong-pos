@@ -4,6 +4,7 @@
 //   onCancel(orderId): 주문 취소 처리
 //   onEdit(order): 주문 수정 모달/폼 열기
 import { format } from 'date-fns'
+import { formatOptionsLabel } from '../constants/productOptions'
 
 export default function OrderList({ orders, onCancel, onEdit }) {
   if (orders.length === 0) {
@@ -67,25 +68,42 @@ export default function OrderList({ orders, onCancel, onEdit }) {
                 gap: '4px',
               }}
             >
-              {order.order_items.map((item) => (
-                <li
-                  key={item.id}
-                  style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    fontSize: '14px',
-                    color: '#333',
-                    textDecoration: isCancelled ? 'line-through' : 'none',
-                  }}
-                >
-                  <span>
-                    {item.product_name} × {item.quantity}
-                  </span>
-                  <span>
-                    {(item.unit_price * item.quantity).toLocaleString('ko-KR')}원
-                  </span>
-                </li>
-              ))}
+              {order.order_items.map((item) => {
+                const optionsLabel  = formatOptionsLabel(item.options ?? {})
+                const effectivePrice = item.unit_price + (item.surcharge ?? 0)
+                return (
+                  <li
+                    key={item.id}
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '2px',
+                      fontSize: '14px',
+                      color: '#333',
+                      textDecoration: isCancelled ? 'line-through' : 'none',
+                    }}
+                  >
+                    {/* 제품명 + 수량 + 금액 */}
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>{item.product_name} × {item.quantity}</span>
+                      <span>{(effectivePrice * item.quantity).toLocaleString('ko-KR')}원</span>
+                    </div>
+                    {/* 옵션 레이블 (있을 때만 표시) */}
+                    {optionsLabel && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span style={{ fontSize: '12px', color: '#888' }}>
+                          └ {optionsLabel}
+                        </span>
+                        {(item.surcharge ?? 0) > 0 && (
+                          <span style={{ fontSize: '12px', color: '#2563eb' }}>
+                            +{item.surcharge.toLocaleString('ko-KR')}원
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </li>
+                )
+              })}
             </ul>
 
             {/* 하단: 합계 + 버튼 */}

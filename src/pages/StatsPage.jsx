@@ -33,7 +33,7 @@ export default function StatsPage() {
 
     // Sheet 1: 주문 목록 — order_items 수만큼 행 펼쳐서 출력
     const orderRows = [
-      ['일시', '주문 ID', '상태', '코드', '제품명', '주문수량', '합계'],
+      ['일시', '주문 ID', '상태', '코드', '제품명', '업그레이드', '주문수량', '합계'],
       ...activeOrders.flatMap((o) =>
         o.order_items.map((item) => [
           format(new Date(o.created_at), 'yyyy-MM-dd HH:mm'),
@@ -41,6 +41,7 @@ export default function StatsPage() {
           o.status,
           item.product_code ?? '',
           item.product_name,
+          item.options?.업그레이드 ?? '',
           item.quantity,
           o.total_amount,
         ])

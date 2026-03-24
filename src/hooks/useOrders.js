@@ -27,7 +27,9 @@ export default function useOrders() {
               product_name,
               product_category,
               unit_price,
-              quantity
+              quantity,
+              options,
+              surcharge
             )
           `)
           .gte('created_at', from)

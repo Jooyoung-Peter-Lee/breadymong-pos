@@ -1,0 +1,134 @@
+/* 옵션 선택 모달 스타일 — 태블릿 터치 기준 */
+
+/* 배경 오버레이 */
+.option-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 16px;
+}
+
+/* 모달 본문 */
+.option-modal {
+  background: #fff;
+  border-radius: 16px;
+  padding: 24px;
+  width: 100%;
+  max-width: 420px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+/* 상품명 타이틀 */
+.option-modal__title {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+  color: #1a1a1a;
+}
+
+/* 옵션 그룹 하나 */
+.option-modal__group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* 그룹 레이블 */
+.option-modal__group-label {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 600;
+  color: #555;
+}
+
+/* 필수 표시 */
+.option-modal__required {
+  color: #e53e3e;
+}
+
+/* 옵션 버튼 묶음 */
+.option-modal__buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+/* 개별 옵션 버튼 */
+.option-modal__btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 80px;
+  min-height: 52px;
+  padding: 10px 16px;
+  border: 2px solid #ddd;
+  border-radius: 10px;
+  background: #fff;
+  color: #333;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  touch-action: manipulation;
+  transition: border-color 0.15s, background 0.15s, color 0.15s;
+}
+
+/* 선택된 옵션 버튼 */
+.option-modal__btn--active {
+  border-color: #2563eb;
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+/* 추가 금액 표시 */
+.option-modal__surcharge {
+  font-size: 11px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.option-modal__btn--active .option-modal__surcharge {
+  color: #2563eb;
+}
+
+/* 하단 버튼 영역 */
+.option-modal__footer {
+  display: flex;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* 취소 버튼 */
+.option-modal__cancel {
+  flex: 1;
+  min-height: 52px;
+  border: 1px solid #ccc;
+  border-radius: 10px;
+  background: #fff;
+  color: #555;
+  font-size: 16px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+/* 담기 버튼 */
+.option-modal__confirm {
+  flex: 2;
+  min-height: 52px;
+  border: none;
+  border-radius: 10px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 17px;
+  font-weight: 700;
+  cursor: pointer;
+  touch-action: manipulation;
+}

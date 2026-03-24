@@ -4,52 +4,49 @@ import useProducts from '../hooks/useProducts'
 import useOrderActions from '../hooks/useOrderActions'
 import ProductCard from '../components/ProductCard'
 import CartSummary from '../components/CartSummary'
+import OptionModal from '../components/OptionModal'
+import { getOptionGroupsForProduct } from '../constants/productOptions'
 
 export default function OrderPage() {
-  // 장바구니: [{ product_id, product_name, product_category, unit_price, quantity }]
-  const [cart, setCart] = useState([])
   const [completing, setCompleting] = useState(false)
   const [completeError, setCompleteError] = useState(null)
+  // 옵션 모달 대상 상품: null이면 모달 닫힘
+  const [optionTarget, setOptionTarget] = useState(null)
 
   const { products, loading, error } = useProducts()
-  const { createOrder } = useOrderActions()
+  const { cart, setCart, addItem, createOrder } = useOrderActions()
 
-  // 제품 카드 탭 → 장바구니에 추가 (이미 있으면 수량 +1)
-  const handleAdd = (product) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.product_id === product.id)
-      if (existing) {
-        return prev.map((item) =>
-          item.product_id === product.id
-            ? { ...item, quantity: item.quantity + 1 }
-            : item
-        )
-      }
-      return [
-        ...prev,
-        {
-          product_id:       product.id,
-          product_code:     product.code,
-          product_name:     product.name,
-          product_category: product.category,
-          unit_price:       product.price,
-          quantity:         1,
-        },
-      ]
-    })
+  // 제품 카드 탭 → 옵션 그룹이 있으면 모달, 없으면 바로 담기
+  const handleProductClick = (product) => {
+    const optionGroups = getOptionGroupsForProduct(product.category, product.code)
+    if (optionGroups.length > 0) {
+      setOptionTarget({ product, optionGroups })
+    } else {
+      addItem(product, {}, 0)
+    }
   }
 
-  // 장바구니에서 특정 아이템 제거
-  const handleRemove = (productId) => {
-    setCart((prev) => prev.filter((item) => item.product_id !== productId))
+  // 모달 확인: 선택된 옵션으로 담기
+  const handleModalConfirm = (selectedOptions, surcharge) => {
+    addItem(optionTarget.product, selectedOptions, surcharge)
+    setOptionTarget(null)
   }
 
-  // 수량 조절: delta 양수면 증가, 음수면 감소. 수량이 0 이하가 되면 아이템 제거
-  const handleQuantityChange = (productId, delta) => {
+  // 장바구니에서 특정 아이템 제거 (product_id + optionsKey 조합으로 식별)
+  const handleRemove = (productId, optionsKey) => {
+    setCart((prev) =>
+      prev.filter(
+        (item) => !(item.product_id === productId && item.optionsKey === optionsKey)
+      )
+    )
+  }
+
+  // 수량 조절: 수량이 0 이하가 되면 아이템 제거
+  const handleQuantityChange = (productId, optionsKey, delta) => {
     setCart((prev) =>
       prev
         .map((item) =>
-          item.product_id === productId
+          item.product_id === productId && item.optionsKey === optionsKey
             ? { ...item, quantity: item.quantity + delta }
             : item
         )
@@ -92,18 +89,13 @@ export default function OrderPage() {
         gap: '24px',
         padding: '20px',
         alignItems: 'flex-start',
-        // 태블릿 세로 레이아웃: 제품 목록(좌) + 장바구니(우)
         flexWrap: 'wrap',
       }}
     >
       {/* 좌측: 제품 목록 */}
       <div style={{ flex: '1 1 400px' }}>
-        {loading && (
-          <p style={{ color: '#555' }}>불러오는 중...</p>
-        )}
-        {error && (
-          <p style={{ color: '#e53e3e' }}>{error}</p>
-        )}
+        {loading && <p style={{ color: '#555' }}>불러오는 중...</p>}
+        {error && <p style={{ color: '#e53e3e' }}>{error}</p>}
         {!loading && !error && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             {Object.entries(groupedProducts).map(([category, items]) => (
@@ -125,7 +117,7 @@ export default function OrderPage() {
                     <ProductCard
                       key={product.id}
                       product={product}
-                      onAdd={handleAdd}
+                      onAdd={handleProductClick}
                     />
                   ))}
                 </div>
@@ -143,7 +135,6 @@ export default function OrderPage() {
           top: '20px',
         }}
       >
-        {/* 결제 처리 에러 */}
         {completeError && (
           <p style={{ color: '#e53e3e', marginBottom: '8px' }}>{completeError}</p>
         )}
@@ -156,6 +147,16 @@ export default function OrderPage() {
           completing={completing}
         />
       </div>
+
+      {/* 옵션 선택 모달 */}
+      {optionTarget && (
+        <OptionModal
+          product={optionTarget.product}
+          optionGroups={optionTarget.optionGroups}
+          onConfirm={handleModalConfirm}
+          onCancel={() => setOptionTarget(null)}
+        />
+      )}
     </div>
   )
 }

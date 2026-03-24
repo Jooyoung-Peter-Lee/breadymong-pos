@@ -1,15 +1,16 @@
 // 장바구니 및 합계 금액 표시 컴포넌트
 // props:
-//   cart: [{ product_id, product_name, product_category, unit_price, quantity }]
-//   onRemove(productId): 아이템 제거
-//   onQuantityChange(productId, delta): 수량 조절 (+1 / -1). 수량 0 이하 시 제거
+//   cart: [{ product_id, product_name, unit_price, quantity, options, optionsKey, optionsLabel, surcharge }]
+//   onRemove(productId, optionsKey): 아이템 제거
+//   onQuantityChange(productId, optionsKey, delta): 수량 조절 (+1 / -1). 수량 0 이하 시 제거
 //   onComplete(): 결제 완료 처리
 //   onClear(): 장바구니 전체 초기화
 //   completing: 결제 처리 중 여부 (중복 제출 방지)
 
 export default function CartSummary({ cart, onRemove, onQuantityChange, onComplete, onClear, completing }) {
+  // 합계: 단가(unit_price + surcharge) × 수량 합산
   const totalAmount = cart.reduce(
-    (sum, item) => sum + item.unit_price * item.quantity,
+    (sum, item) => sum + (item.unit_price + (item.surcharge ?? 0)) * item.quantity,
     0
   )
 
@@ -25,89 +26,113 @@ export default function CartSummary({ cart, onRemove, onQuantityChange, onComple
         </p>
       ) : (
         <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-          {cart.map((item) => (
-            <li
-              key={item.product_id}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px',
-                padding: '8px 12px',
-                border: '1px solid #eee',
-                borderRadius: '6px',
-                background: '#fafafa',
-              }}
-            >
-              {/* 제품명 */}
-              <span style={{ flex: 1, fontSize: '15px', fontWeight: '500' }}>
-                {item.product_name}
-              </span>
+          {cart.map((item) => {
+            // 고유 키: product_id + optionsKey 조합
+            const itemKey = `${item.product_id}-${item.optionsKey}`
+            // 실제 단가 = 기본 단가 + 옵션 추가 금액
+            const effectivePrice = item.unit_price + (item.surcharge ?? 0)
 
-              {/* 수량 조절: [ − ] [ 수량 ] [ + ] */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                <button
-                  onClick={() =>
-                    item.quantity === 1
-                      ? onRemove(item.product_id)
-                      : onQuantityChange(item.product_id, -1)
-                  }
-                  style={{
-                    minWidth: '48px',
-                    minHeight: '48px',
-                    border: '1px solid #ddd',
-                    borderRadius: '6px',
-                    background: '#fff',
-                    color: item.quantity === 1 ? '#e53e3e' : '#333',
-                    fontSize: '18px',
-                    cursor: 'pointer',
-                    touchAction: 'manipulation',
-                  }}
-                  aria-label={`${item.product_name} 수량 줄이기`}
-                >
-                  {item.quantity === 1 ? '×' : '−'}
-                </button>
-                <span
-                  style={{
-                    minWidth: '32px',
-                    textAlign: 'center',
-                    fontSize: '15px',
-                    fontWeight: '600',
-                  }}
-                >
-                  {item.quantity}
-                </span>
-                <button
-                  onClick={() => onQuantityChange(item.product_id, +1)}
-                  style={{
-                    minWidth: '48px',
-                    minHeight: '48px',
-                    border: '1px solid #ddd',
-                    borderRadius: '6px',
-                    background: '#fff',
-                    color: '#333',
-                    fontSize: '18px',
-                    cursor: 'pointer',
-                    touchAction: 'manipulation',
-                  }}
-                  aria-label={`${item.product_name} 수량 늘리기`}
-                >
-                  +
-                </button>
-              </div>
-
-              {/* 소계 — 우측 정렬 고정폭 */}
-              <span
+            return (
+              <li
+                key={itemKey}
                 style={{
-                  minWidth: '80px',
-                  textAlign: 'right',
-                  fontSize: '14px',
-                  color: '#333',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '4px',
+                  padding: '8px 12px',
+                  border: '1px solid #eee',
+                  borderRadius: '6px',
+                  background: '#fafafa',
                 }}
               >
-                {(item.unit_price * item.quantity).toLocaleString('ko-KR')}원
-              </span>
-            </li>
-          ))}
+                {/* 상단: 제품명 + 수량 조절 + 소계 */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  {/* 제품명 */}
+                  <span style={{ flex: 1, fontSize: '15px', fontWeight: '500' }}>
+                    {item.product_name}
+                  </span>
+
+                  {/* 수량 조절: [ − ] [ 수량 ] [ + ] */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <button
+                      onClick={() =>
+                        item.quantity === 1
+                          ? onRemove(item.product_id, item.optionsKey)
+                          : onQuantityChange(item.product_id, item.optionsKey, -1)
+                      }
+                      style={{
+                        minWidth: '48px',
+                        minHeight: '48px',
+                        border: '1px solid #ddd',
+                        borderRadius: '6px',
+                        background: '#fff',
+                        color: item.quantity === 1 ? '#e53e3e' : '#333',
+                        fontSize: '18px',
+                        cursor: 'pointer',
+                        touchAction: 'manipulation',
+                      }}
+                      aria-label={`${item.product_name} 수량 줄이기`}
+                    >
+                      {item.quantity === 1 ? '×' : '−'}
+                    </button>
+                    <span
+                      style={{
+                        minWidth: '32px',
+                        textAlign: 'center',
+                        fontSize: '15px',
+                        fontWeight: '600',
+                      }}
+                    >
+                      {item.quantity}
+                    </span>
+                    <button
+                      onClick={() => onQuantityChange(item.product_id, item.optionsKey, +1)}
+                      style={{
+                        minWidth: '48px',
+                        minHeight: '48px',
+                        border: '1px solid #ddd',
+                        borderRadius: '6px',
+                        background: '#fff',
+                        color: '#333',
+                        fontSize: '18px',
+                        cursor: 'pointer',
+                        touchAction: 'manipulation',
+                      }}
+                      aria-label={`${item.product_name} 수량 늘리기`}
+                    >
+                      +
+                    </button>
+                  </div>
+
+                  {/* 소계 — 우측 정렬 고정폭 */}
+                  <span
+                    style={{
+                      minWidth: '80px',
+                      textAlign: 'right',
+                      fontSize: '14px',
+                      color: '#333',
+                    }}
+                  >
+                    {(effectivePrice * item.quantity).toLocaleString('ko-KR')}원
+                  </span>
+                </div>
+
+                {/* 하단: 옵션 레이블 + 추가 금액 (옵션 있을 때만 표시) */}
+                {item.optionsLabel && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '2px' }}>
+                    <span style={{ fontSize: '12px', color: '#888' }}>
+                      └ {item.optionsLabel}
+                    </span>
+                    {(item.surcharge ?? 0) > 0 && (
+                      <span style={{ fontSize: '12px', color: '#2563eb' }}>
+                        +{item.surcharge.toLocaleString('ko-KR')}원
+                      </span>
+                    )}
+                  </div>
+                )}
+              </li>
+            )
+          })}
         </ul>
       )}
 
