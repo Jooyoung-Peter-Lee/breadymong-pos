@@ -14,7 +14,9 @@ export function useReceipt({ storeName = '브레디몽' } = {}) {
       document.body.appendChild(el)
     }
 
-    const dateStr = format(new Date(created_at), 'yyyy-MM-dd HH:mm')
+    const dateStr  = format(new Date(created_at), 'yyyy-MM-dd HH:mm')
+    // UUID 뒤 8자리를 주문번호로 표시 (예: #A1B2C3D4)
+    const orderNo  = id ? id.slice(-8).toUpperCase() : ''
 
     // 아이템 HTML 생성
     const itemsHtml = items
@@ -39,6 +41,7 @@ export function useReceipt({ storeName = '브레디몽' } = {}) {
     el.innerHTML = `
       <div class="receipt-store">${storeName}</div>
       <div class="receipt-date">${dateStr}</div>
+      <div class="receipt-date">주문번호: #${orderNo}</div>
       <hr class="receipt-divider" />
       ${itemsHtml}
       <hr class="receipt-divider" />
