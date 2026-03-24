@@ -6,6 +6,7 @@ import ProductCard from '../components/ProductCard'
 import CartSummary from '../components/CartSummary'
 import OptionModal from '../components/OptionModal'
 import { getOptionGroupsForProduct } from '../constants/productOptions'
+import { useReceipt } from '../hooks/useReceipt'
 
 export default function OrderPage() {
   const [completing, setCompleting] = useState(false)
@@ -15,6 +16,7 @@ export default function OrderPage() {
 
   const { products, loading, error } = useProducts()
   const { cart, setCart, addItem, createOrder } = useOrderActions()
+  const { printReceipt } = useReceipt({ storeName: '브레디몽' })
 
   // 제품 카드 탭 → 옵션 그룹이 있으면 모달, 없으면 바로 담기
   const handleProductClick = (product) => {
@@ -65,7 +67,24 @@ export default function OrderPage() {
     setCompleting(true)
     setCompleteError(null)
     try {
-      await createOrder(cart)
+      const savedOrder = await createOrder(cart)
+      // 주문 저장 완료 후 영수증 인쇄 (실패해도 결제 완료 처리)
+      try {
+        printReceipt({
+          id:          savedOrder.id,
+          created_at:  savedOrder.created_at,
+          totalAmount: savedOrder.total_amount,
+          items: cart.map((item) => ({
+            name:         item.product_name,
+            optionsLabel: item.optionsLabel ?? '',
+            surcharge:    item.surcharge    ?? 0,
+            quantity:     item.quantity,
+            price:        item.unit_price,
+          })),
+        })
+      } catch {
+        // 프린터 없거나 인쇄 실패 시 무시하고 결제 완료 처리
+      }
       setCart([]) // 결제 완료 후 장바구니 자동 초기화
     } catch (err) {
       setCompleteError(err.message)

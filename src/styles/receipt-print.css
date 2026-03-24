@@ -1,0 +1,85 @@
+/* 영수증 프린트 전용 스타일 */
+/* CPP-3000 열영수증 프린터 기준 (용지 폭 80mm) */
+
+/* 화면에서 영수증 숨김 */
+#receipt-print {
+  display: none;
+}
+
+/* 인쇄 시: POS 화면 숨기고 영수증만 표시 */
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* React 앱 전체 숨김 */
+  #root {
+    display: none !important;
+  }
+
+  /* 영수증만 표시 */
+  #receipt-print {
+    display: block !important;
+    width: 72mm;
+    padding: 4mm;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 11pt;
+    color: #000;
+    line-height: 1.5;
+  }
+
+  /* 매장명 */
+  .receipt-store {
+    text-align: center;
+    font-size: 15pt;
+    font-weight: bold;
+    margin-bottom: 3mm;
+  }
+
+  /* 주문 일시 */
+  .receipt-date {
+    text-align: center;
+    font-size: 9pt;
+    margin-bottom: 1mm;
+  }
+
+  /* 구분선 */
+  .receipt-divider {
+    border: none;
+    border-top: 1px dashed #000;
+    margin: 2mm 0;
+  }
+
+  /* 아이템 하나 */
+  .receipt-item {
+    margin: 1.5mm 0;
+  }
+
+  /* 제품명 + 수량 + 금액 행 */
+  .receipt-item-row {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  /* 옵션 레이블 (└ 형태) */
+  .receipt-options {
+    font-size: 9pt;
+    padding-left: 3mm;
+    color: #333;
+  }
+
+  /* 합계 행 */
+  .receipt-total {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14pt;
+    font-weight: bold;
+    margin-top: 1mm;
+  }
+}

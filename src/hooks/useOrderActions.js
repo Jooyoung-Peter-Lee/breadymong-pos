@@ -93,7 +93,8 @@ export default function useOrderActions() {
 
       if (error) throw new Error('주문 생성에 실패했습니다.')
 
-      return true
+      // data: RPC가 반환한 주문 UUID
+      return { id: data, created_at: new Date().toISOString(), total_amount: totalAmount }
     } catch (err) {
       console.error('주문 생성 실패:', err)
       throw err
